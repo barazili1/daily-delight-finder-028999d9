@@ -1,10 +1,18 @@
-import { useState } from "react";
-import { KeyRound, Ticket, ShieldCheck, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { KeyRound, Ticket, ShieldCheck, Loader2, Clock, XCircle } from "lucide-react";
 import { Overlay } from "@/components/Overlay";
 import { supabase } from "@/integrations/supabase/client";
-import { saveSession, type ActiveSession } from "@/lib/session";
+import {
+  saveSession,
+  addCodeToHistory,
+  readCodeHistory,
+  isCodeValid,
+  type CodeHistoryItem,
+  type ActiveSession,
+} from "@/lib/session";
 
 export const ADMIN_CODE = "HACKSD";
+
 
 export function ChoiceDialog({
   open,
