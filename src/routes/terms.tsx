@@ -6,6 +6,10 @@ import { Logo } from "@/components/Logo";
 import { LoadingDialog } from "@/components/LoadingDialog";
 import { Brand } from "@/components/Brand";
 import { saveUserId } from "@/lib/session";
+import logo1xBet from "@/assets/platform-1xbet.png";
+import logoLineBet from "@/assets/platform-linebet.png";
+import logoWinWin from "@/assets/platform-winwin.png";
+import logoGreenBet from "@/assets/platform-greenbet.png";
 
 export const Route = createFileRoute("/terms")({
   head: () => ({
