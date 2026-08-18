@@ -8,9 +8,9 @@ export function TopBar({ showBack = true }: { showBack?: boolean }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const t = setInterval(() => {
-      setOnline((v) => Math.max(900, v + Math.floor(Math.random() * 11) - 5));
-    }, 2500);
+    const rand = () => 1000 + Math.floor(Math.random() * 9001);
+    setOnline(rand());
+    const t = setInterval(() => setOnline(rand()), 1500);
     return () => clearInterval(t);
   }, []);
 
