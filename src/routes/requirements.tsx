@@ -240,14 +240,16 @@ function RequirementsPage() {
 
   const shotCount = shots.filter(Boolean).length;
 
-  // The user left to the Telegram bot to grab a code — the moment they come
-  // back to the site, show the activation code input straight away.
+  // The user left to the Telegram bot — when they come back, send them
+  // to the first page instead of opening the code input.
   useEffect(() => {
     const onBack = () => {
       if (document.visibilityState !== "visible") return;
       if (!isAwaitingCode()) return;
+      clearAwaitingCode();
       setSeqOpen(false);
-      setCodeOpen(true);
+      setCodeOpen(false);
+      navigate({ to: "/games" });
     };
     document.addEventListener("visibilitychange", onBack);
     window.addEventListener("focus", onBack);
@@ -257,6 +259,7 @@ function RequirementsPage() {
       window.removeEventListener("focus", onBack);
     };
   }, []);
+
 
   const mark = (k: string) => setDone((d) => ({ ...d, [k]: true }));
 

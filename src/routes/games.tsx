@@ -8,7 +8,7 @@ import { Brand } from "@/components/Brand";
 import { ChoiceDialog, CodeDialog } from "@/components/ActivationDialogs";
 import {
   clearAwaitingCode,
-  isAwaitingCode,
+  
   readPendingGame,
   savePendingGame,
 } from "@/lib/session";
@@ -45,24 +45,12 @@ function GamesPage() {
   const [choice, setChoice] = useState<string | null>(null);
   const [codeOpen, setCodeOpen] = useState(false);
 
-  // Coming back from the Telegram bot: open the code input right away
-  // for the game the user had picked before leaving.
+  // Coming back from the Telegram bot: just land on this first page,
+  // no code input is opened automatically.
   useEffect(() => {
-    const onBack = () => {
-      if (document.visibilityState !== "visible") return;
-      if (!isAwaitingCode()) return;
-      const pending = readPendingGame();
-      if (pending) setChoice(pending);
-      setCodeOpen(true);
-    };
-    document.addEventListener("visibilitychange", onBack);
-    window.addEventListener("focus", onBack);
-    onBack();
-    return () => {
-      document.removeEventListener("visibilitychange", onBack);
-      window.removeEventListener("focus", onBack);
-    };
+    clearAwaitingCode();
   }, []);
+
 
   const play = (to: string) => {
     savePendingGame(to);
