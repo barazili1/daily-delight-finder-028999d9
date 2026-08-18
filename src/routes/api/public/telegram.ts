@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { WELCOME_JPEG_B64 } from "@/lib/telegram-assets.server";
-import { getBotToken } from "@/lib/bot-token.server";
+import { getBotToken, TELEGRAM_CHANNEL, TELEGRAM_CHANNEL_LINK } from "@/lib/bot-token.server";
 
 const API = (token: string, method: string) => `https://api.telegram.org/bot${token}/${method}`;
 
