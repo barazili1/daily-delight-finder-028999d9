@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Check, Loader2, Send } from "lucide-react";
 import { Overlay } from "@/components/Overlay";
-import { readUserId } from "@/lib/session";
+import { markAwaitingCode, readUserId } from "@/lib/session";
 
 const BOT = "crazyvip1_bot";
 
@@ -65,6 +65,7 @@ export function VerifySequenceDialog({ open, onClose }: { open: boolean; onClose
           <p className="mt-1 text-lg font-black text-primary">@{BOT}</p>
           <a
             href={link}
+            onClick={() => markAwaitingCode()}
             target="_blank"
             rel="noreferrer"
             className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-black text-black transition active:scale-95"

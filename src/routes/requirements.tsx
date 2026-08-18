@@ -1,7 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ensureUserId } from "@/lib/session";
+import {
+  clearAwaitingCode,
+  ensureUserId,
+  isAwaitingCode,
+  readPendingGame,
+} from "@/lib/session";
 import {
   Copy,
   Check,
@@ -19,6 +24,7 @@ import { Logo } from "@/components/Logo";
 import { LoadingDialog } from "@/components/LoadingDialog";
 import { Brand } from "@/components/Brand";
 import { VerifySequenceDialog } from "@/components/VerifySequenceDialog";
+import { CodeDialog } from "@/components/ActivationDialogs";
 import imgDownload from "@/assets/step-download.jpg";
 import imgTelegram from "@/assets/step-telegram.jpg";
 import imgPromo from "@/assets/step-promo.jpg";
@@ -224,6 +230,8 @@ function Upload({
 
 function RequirementsPage() {
   const { platform } = Route.useSearch();
+  const navigate = useNavigate();
+  const [codeOpen, setCodeOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [seqOpen, setSeqOpen] = useState(false);
@@ -231,6 +239,24 @@ function RequirementsPage() {
   const [shots, setShots] = useState<(File | null)[]>([null, null]);
 
   const shotCount = shots.filter(Boolean).length;
+
+  // The user left to the Telegram bot to grab a code — the moment they come
+  // back to the site, show the activation code input straight away.
+  useEffect(() => {
+    const onBack = () => {
+      if (document.visibilityState !== "visible") return;
+      if (!isAwaitingCode()) return;
+      setSeqOpen(false);
+      setCodeOpen(true);
+    };
+    document.addEventListener("visibilitychange", onBack);
+    window.addEventListener("focus", onBack);
+    onBack();
+    return () => {
+      document.removeEventListener("visibilitychange", onBack);
+      window.removeEventListener("focus", onBack);
+    };
+  }, []);
 
   const mark = (k: string) => setDone((d) => ({ ...d, [k]: true }));
 
@@ -459,6 +485,25 @@ function RequirementsPage() {
 
       <LoadingDialog open={loading} />
       <VerifySequenceDialog open={seqOpen} onClose={() => setSeqOpen(false)} />
+      <CodeDialog
+        open={codeOpen}
+        onClose={() => {
+          setCodeOpen(false);
+          clearAwaitingCode();
+        }}
+        onVerified={() => {
+          setCodeOpen(false);
+          clearAwaitingCode();
+          const to = readPendingGame() || "/games";
+          setLoading(true);
+          setTimeout(() => navigate({ to }), 1500);
+        }}
+        onAdmin={() => {
+          setCodeOpen(false);
+          clearAwaitingCode();
+          navigate({ to: "/admin" });
+        }}
+      />
     </main>
   );
 }

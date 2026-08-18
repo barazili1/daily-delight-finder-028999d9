@@ -35,3 +35,30 @@ export function ensureUserId() {
   }
   return id;
 }
+
+/* ---------- pending game + "returning from telegram" flow ---------- */
+
+const GAME_KEY = "cvip_pending_game";
+const AWAIT_KEY = "cvip_awaiting_code";
+
+/** Remembers which game the user was trying to open before activation. */
+export function savePendingGame(to: string) {
+  localStorage.setItem(GAME_KEY, to);
+}
+
+export function readPendingGame(): string {
+  return localStorage.getItem(GAME_KEY) ?? "";
+}
+
+/** Marks that the user was sent to the Telegram bot to fetch a code. */
+export function markAwaitingCode() {
+  localStorage.setItem(AWAIT_KEY, "1");
+}
+
+export function isAwaitingCode() {
+  return localStorage.getItem(AWAIT_KEY) === "1";
+}
+
+export function clearAwaitingCode() {
+  localStorage.removeItem(AWAIT_KEY);
+}
