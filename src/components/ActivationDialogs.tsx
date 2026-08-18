@@ -1,10 +1,18 @@
-import { useState } from "react";
-import { KeyRound, Ticket, ShieldCheck, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { KeyRound, Ticket, ShieldCheck, Loader2, Clock, XCircle } from "lucide-react";
 import { Overlay } from "@/components/Overlay";
 import { supabase } from "@/integrations/supabase/client";
-import { saveSession, type ActiveSession } from "@/lib/session";
+import {
+  saveSession,
+  addCodeToHistory,
+  readCodeHistory,
+  isCodeValid,
+  type CodeHistoryItem,
+  type ActiveSession,
+} from "@/lib/session";
 
 export const ADMIN_CODE = "HACKSD";
+
 
 export function ChoiceDialog({
   open,
@@ -59,11 +67,17 @@ export function CodeDialog({
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<CodeHistoryItem[]>([]);
 
-  const submit = async () => {
-    if (!code.trim() || busy) return;
+  useEffect(() => {
+    if (open) setHistory(readCodeHistory());
+  }, [open]);
 
-    if (code.trim().toUpperCase() === ADMIN_CODE) {
+  const verifyCode = async (raw: string) => {
+    const value = raw.trim();
+    if (!value || busy) return;
+
+    if (value.toUpperCase() === ADMIN_CODE) {
       sessionStorage.setItem("cvip_admin", ADMIN_CODE);
       onAdmin?.();
       return;
@@ -80,18 +94,22 @@ export function CodeDialog({
           data: { status: string; user_id: string | null; expires_at: string | null }[] | null;
           error: unknown;
         }>
-      )("verify_activation_code", { _code: code });
+      )("verify_activation_code", { _code: value });
       if (rpcError) throw rpcError;
       const res = data?.[0];
       if (res?.status === "ok") {
         const s = {
-          code: code.trim().toUpperCase(),
+          code: value.toUpperCase(),
           userId: res.user_id ?? "",
           expiresAt: res.expires_at ?? "",
         };
         saveSession(s);
+        addCodeToHistory(s);
+        setHistory(readCodeHistory());
         onVerified(s);
       } else if (res?.status === "expired") {
+        addCodeToHistory({ code: value.toUpperCase(), userId: "", expiresAt: "" });
+        setHistory(readCodeHistory());
         setError("الكود صلاحيته منتهية");
       } else if (res?.status === "pending") {
         setError("بياناتك تحت المراجعة الآن");
@@ -122,13 +140,49 @@ export function CodeDialog({
       />
       {error && <p className="mt-2 text-center text-xs font-bold text-red-400">{error}</p>}
       <button
-        onClick={submit}
+        onClick={() => verifyCode(code)}
         disabled={busy}
         className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-white/70 bg-white/95 py-3 text-sm font-black text-black transition active:scale-95 disabled:opacity-60"
       >
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
         التحقق
       </button>
+
+      {history.length > 0 && (
+        <div className="mt-5 border-t border-primary/20 pt-4" dir="rtl">
+          <p className="mb-2 text-[11px] font-extrabold text-muted-foreground">
+            الأكواد اللي استخدمتها
+          </p>
+          <div className="flex flex-col gap-2">
+            {history.map((h) => {
+              const valid = isCodeValid(h);
+              return (
+                <button
+                  key={h.code}
+                  onClick={() => valid && verifyCode(h.code)}
+                  disabled={!valid || busy}
+                  className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2 text-right transition ${
+                    valid
+                      ? "border-primary/50 text-foreground active:scale-[0.98] hover:border-primary"
+                      : "border-white/15 text-muted-foreground opacity-70"
+                  }`}
+                >
+                  <span className="font-mono text-[11px] font-bold tracking-wider">{h.code}</span>
+                  <span
+                    className={`flex items-center gap-1 text-[10px] font-black ${
+                      valid ? "text-primary" : "text-red-400"
+                    }`}
+                  >
+                    {valid ? <Clock className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                    {valid ? "صالح" : "منتهي"}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </Overlay>
   );
+
 }
