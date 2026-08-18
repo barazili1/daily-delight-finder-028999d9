@@ -178,7 +178,7 @@ function TermsPage() {
                     loading="lazy"
                     width={96}
                     height={40}
-                    className="relative z-10 h-9 w-24 object-contain"
+                    className="relative z-10 h-9 w-24 object-contain drop-shadow-[0_0_6px_rgba(255,255,255,0.55)]"
                   />
                   <span className="relative z-10">{p.name}</span>
                   {platform === p.name && (
