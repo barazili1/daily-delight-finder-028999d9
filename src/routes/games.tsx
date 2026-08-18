@@ -81,6 +81,7 @@ function GamesPage() {
 
   const onVerified = () => {
     const to = (choice ?? readPendingGame() ?? "") || "/game/apple";
+    clearAwaitingCode();
     setCodeOpen(false);
     setChoice(null);
     setLoading(true);
