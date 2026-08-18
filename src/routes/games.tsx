@@ -48,11 +48,20 @@ function GamesPage() {
   // Coming back from the Telegram bot: open the code input right away
   // for the game the user had picked before leaving.
   useEffect(() => {
-    if (!isAwaitingCode()) return;
-    const pending = readPendingGame();
-    if (pending) setChoice(pending);
-    setCodeOpen(true);
-    clearAwaitingCode();
+    const onBack = () => {
+      if (document.visibilityState !== "visible") return;
+      if (!isAwaitingCode()) return;
+      const pending = readPendingGame();
+      if (pending) setChoice(pending);
+      setCodeOpen(true);
+    };
+    document.addEventListener("visibilitychange", onBack);
+    window.addEventListener("focus", onBack);
+    onBack();
+    return () => {
+      document.removeEventListener("visibilitychange", onBack);
+      window.removeEventListener("focus", onBack);
+    };
   }, []);
 
   const play = (to: string) => {
@@ -72,6 +81,7 @@ function GamesPage() {
 
   const onVerified = () => {
     const to = (choice ?? readPendingGame() ?? "") || "/game/apple";
+    clearAwaitingCode();
     setCodeOpen(false);
     setChoice(null);
     setLoading(true);
@@ -190,10 +200,14 @@ function GamesPage() {
       />
       <CodeDialog
         open={codeOpen}
-        onClose={() => setCodeOpen(false)}
+        onClose={() => {
+          setCodeOpen(false);
+          clearAwaitingCode();
+        }}
         onVerified={onVerified}
         onAdmin={() => {
           setCodeOpen(false);
+          clearAwaitingCode();
           setChoice(null);
           navigate({ to: "/admin" });
         }}
