@@ -199,10 +199,14 @@ function GamesPage() {
       />
       <CodeDialog
         open={codeOpen}
-        onClose={() => setCodeOpen(false)}
+        onClose={() => {
+          setCodeOpen(false);
+          clearAwaitingCode();
+        }}
         onVerified={onVerified}
         onAdmin={() => {
           setCodeOpen(false);
+          clearAwaitingCode();
           setChoice(null);
           navigate({ to: "/admin" });
         }}
