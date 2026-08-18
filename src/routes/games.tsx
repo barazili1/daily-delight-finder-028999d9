@@ -8,7 +8,7 @@ import { Brand } from "@/components/Brand";
 import { ChoiceDialog, CodeDialog } from "@/components/ActivationDialogs";
 import {
   clearAwaitingCode,
-  isAwaitingCode,
+  
   readPendingGame,
   savePendingGame,
 } from "@/lib/session";
