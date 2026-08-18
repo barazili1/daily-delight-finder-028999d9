@@ -46,6 +46,40 @@ async function sendPendingReview(token: string, chatId: number) {
   });
 }
 
+/** Mandatory channel subscription check. */
+async function isSubscribed(token: string, userId: number) {
+  try {
+    const res = await fetch(
+      `${API(token, "getChatMember")}?chat_id=${encodeURIComponent(TELEGRAM_CHANNEL)}&user_id=${userId}`,
+    );
+    const json = (await res.json()) as { ok?: boolean; result?: { status?: string } };
+    const status = json.result?.status ?? "";
+    return json.ok === true && ["creator", "administrator", "member", "restricted"].includes(status);
+  } catch {
+    return false;
+  }
+}
+
+async function askToSubscribe(token: string, chatId: number, name: string) {
+  await fetch(API(token, "sendMessage"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      parse_mode: "HTML",
+      text:
+        `👋 <b>أهلاً ${name}</b>\n\n` +
+        "🔒 للاستفادة من البوت لازم تكون <b>مشترك في قناتنا</b> على تلجرام.\n\n" +
+        "1️⃣ اشترك في القناة\n2️⃣ ارجع هنا واضغط /start تاني وهيوصلك كل حاجة 👌",
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "📢 اشترك في القناة", url: TELEGRAM_CHANNEL_LINK }],
+        ],
+      },
+    }),
+  });
+}
+
 export const Route = createFileRoute("/api/public/telegram")({
   server: {
     handlers: {
