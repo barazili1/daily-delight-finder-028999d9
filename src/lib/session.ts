@@ -62,3 +62,31 @@ export function isAwaitingCode() {
 export function clearAwaitingCode() {
   localStorage.removeItem(AWAIT_KEY);
 }
+
+/* ---------- history of codes the user already used ---------- */
+
+export type CodeHistoryItem = { code: string; userId: string; expiresAt: string };
+
+const HISTORY_KEY = "cvip_code_history";
+
+export function readCodeHistory(): CodeHistoryItem[] {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    const list = JSON.parse(raw) as CodeHistoryItem[];
+    return Array.isArray(list) ? list : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addCodeToHistory(item: CodeHistoryItem) {
+  const list = readCodeHistory().filter((i) => i.code !== item.code);
+  list.unshift(item);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(0, 10)));
+}
+
+export function isCodeValid(item: CodeHistoryItem) {
+  return !!item.expiresAt && new Date(item.expiresAt).getTime() > Date.now();
+}
+
