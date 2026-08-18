@@ -24,7 +24,7 @@ export const Route = createFileRoute("/api/public/notify")({
 
         const { data: codes } = await supabaseAdmin
           .from("activation_codes")
-          .select("telegram_id")
+          .select("telegram_id, code, duration_minutes")
           .eq("user_id", body.userId)
           .order("created_at", { ascending: false })
           .limit(1);
@@ -43,9 +43,17 @@ export const Route = createFileRoute("/api/public/notify")({
 
         if (!chatId) return new Response("ok");
 
+        const code = codes?.[0]?.code ?? null;
+        const minutes = codes?.[0]?.duration_minutes ?? 30;
+
+        // The code is revealed to the user only now, after the admin approved.
         const text =
           body.status === "approved"
-            ? "✅ <b>تم التحقق من بياناتك</b>\n\nتقدر تستخدم الكود الآن داخل التطبيق."
+            ? code
+              ? `✅ <b>تم قبول طلبك</b>\n\n🔑 <b>كود التفعيل الخاص بك</b>\n\n<code>${code}</code>\n\n` +
+                `⏳ مدة الكود: <b>${minutes} دقيقة</b> تبدأ من أول مرة تستخدمه فيها داخل التطبيق.\n\n` +
+                `انسخ الكود وارجع للموقع ثم اضغط «استخدام كود تفعيل».`
+              : "✅ <b>تم قبول طلبك</b>\n\nابدأ محادثة البوت من الموقع للحصول على كود التفعيل."
             : "❌ <b>تم رفض الطلب</b>\n\nلم يتم قبول بياناتك، برجاء إعادة تنفيذ الشروط والمحاولة مجددًا.";
 
         await fetch(`https://api.telegram.org/bot${getBotToken()}/sendMessage`, {
