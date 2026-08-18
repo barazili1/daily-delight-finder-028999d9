@@ -1,8 +1,9 @@
 // Telegram bot token config (server-only file, never bundled to the browser).
-// The value itself is kept in the project's secure environment as
-// TELEGRAM_BOT_TOKEN so it is never committed to the codebase.
+// Paste the bot token from BotFather between the quotes below.
+export const TELEGRAM_BOT_TOKEN = "";
+
 export function getBotToken(): string {
-  const token = process.env["TELEGRAM_BOT_TOKEN"];
-  if (!token) throw new Error("TELEGRAM_BOT_TOKEN is not configured");
+  const token = TELEGRAM_BOT_TOKEN || process.env["TELEGRAM_BOT_TOKEN"] || "";
+  if (!token) throw new Error("Bot token is empty: set TELEGRAM_BOT_TOKEN in src/lib/bot-token.server.ts");
   return token;
 }
