@@ -296,7 +296,7 @@ function RequirementsPage() {
       }
       if (paths.length === 2) {
         await (
-          supabase.rpc as unknown as (
+          supabase.rpc.bind(supabase) as unknown as (
             fn: string,
             args: Record<string, unknown>,
           ) => Promise<{ data: unknown; error: unknown }>
