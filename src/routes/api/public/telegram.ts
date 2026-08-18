@@ -24,7 +24,7 @@ async function sendWelcome(token: string, chatId: number, name: string) {
   form.append("chat_id", String(chatId));
   form.append(
     "caption",
-    `🎰 <b>أهلاً ${name} في CRAZY VIP</b>\n\nمنصة الإشارات والأكواد الأولى.\nجارٍ توليد كود التفعيل الخاص بك...`,
+    `🎰 <b>أهلاً ${name} في CRAZY VIP</b>\n\nمنصة الإشارات والأكواد الأولى.\nجارٍ تسجيل طلبك ومراجعته...`,
   );
   form.append("parse_mode", "HTML");
   form.append("photo", new Blob([b64ToBytes(WELCOME_JPEG_B64)], { type: "image/jpeg" }), "welcome.jpg");
@@ -106,7 +106,7 @@ export const Route = createFileRoute("/api/public/telegram")({
           .update({ telegram_id: String(chatId) })
           .eq("user_id", arg);
 
-        await sendCode(token, chatId, code, minutes);
+        await sendPendingReview(token, chatId);
         return new Response("ok");
       },
     },
