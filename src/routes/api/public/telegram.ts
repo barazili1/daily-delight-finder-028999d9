@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { WELCOME_JPEG_B64 } from "@/lib/telegram-assets.server";
-import { getBotToken } from "@/lib/bot-token.server";
+import { getBotToken, TELEGRAM_CHANNEL, TELEGRAM_CHANNEL_LINK } from "@/lib/bot-token.server";
 
 const API = (token: string, method: string) => `https://api.telegram.org/bot${token}/${method}`;
 
@@ -46,6 +46,40 @@ async function sendPendingReview(token: string, chatId: number) {
   });
 }
 
+/** Mandatory channel subscription check. */
+async function isSubscribed(token: string, userId: number) {
+  try {
+    const res = await fetch(
+      `${API(token, "getChatMember")}?chat_id=${encodeURIComponent(TELEGRAM_CHANNEL)}&user_id=${userId}`,
+    );
+    const json = (await res.json()) as { ok?: boolean; result?: { status?: string } };
+    const status = json.result?.status ?? "";
+    return json.ok === true && ["creator", "administrator", "member", "restricted"].includes(status);
+  } catch {
+    return false;
+  }
+}
+
+async function askToSubscribe(token: string, chatId: number, name: string) {
+  await fetch(API(token, "sendMessage"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      parse_mode: "HTML",
+      text:
+        `👋 <b>أهلاً ${name}</b>\n\n` +
+        "🔒 للاستفادة من البوت لازم تكون <b>مشترك في قناتنا</b> على تلجرام.\n\n" +
+        "1️⃣ اشترك في القناة\n2️⃣ ارجع هنا واضغط /start تاني وهيوصلك كل حاجة 👌",
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "📢 اشترك في القناة", url: TELEGRAM_CHANNEL_LINK }],
+        ],
+      },
+    }),
+  });
+}
+
 export const Route = createFileRoute("/api/public/telegram")({
   server: {
     handlers: {
@@ -53,7 +87,7 @@ export const Route = createFileRoute("/api/public/telegram")({
         const token = getBotToken();
 
         const update = (await request.json()) as {
-          message?: { chat: { id: number }; from?: { first_name?: string }; text?: string };
+          message?: { chat: { id: number }; from?: { id?: number; first_name?: string }; text?: string };
         };
         const msg = update.message;
         if (!msg?.text) return new Response("ok");
@@ -63,6 +97,14 @@ export const Route = createFileRoute("/api/public/telegram")({
         const [cmd, arg] = msg.text.trim().split(/\s+/);
 
         if (cmd !== "/start" && cmd !== "/code") return new Response("ok");
+
+        // Mandatory channel subscription: not a member -> ask, and stop here.
+        const fromId = msg.from?.id ?? chatId;
+        if (!(await isSubscribed(token, fromId))) {
+          await askToSubscribe(token, chatId, name);
+          return new Response("ok");
+        }
+
 
         // Only users who came from the website (deep link with their user id) get a code
         if (!arg) {
