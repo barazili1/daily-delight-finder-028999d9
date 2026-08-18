@@ -6,6 +6,10 @@ import { Logo } from "@/components/Logo";
 import { LoadingDialog } from "@/components/LoadingDialog";
 import { Brand } from "@/components/Brand";
 import { saveUserId } from "@/lib/session";
+import logo1xBet from "@/assets/platform-1xbet.png";
+import logoLineBet from "@/assets/platform-linebet.png";
+import logoWinWin from "@/assets/platform-winwin.png";
+import logoGreenBet from "@/assets/platform-greenbet.png";
 
 export const Route = createFileRoute("/terms")({
   head: () => ({
@@ -20,22 +24,10 @@ export const Route = createFileRoute("/terms")({
 });
 
 const PLATFORMS = [
-  {
-    name: "1xBet",
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMxsxWVPqzBF6_qMWxJ25eqzqcWdqmZsrH-cg8JM9iRQ&s=10",
-  },
-  {
-    name: "LineBet",
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1dK-cg_C-Zfz6kaND13r7emp2fatCIu-9yfM5ftMLnA&s=10",
-  },
-  {
-    name: "WinWin",
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDBd0TpCQWUvWfxuU9DfJRgEs604mfmOEr0EHZOY0b9w&s=10",
-  },
-  {
-    name: "GreenBet",
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHj9Nutnq2wsx-wqcT829tUFXwZVsA49z6OXdwjIVUVw&s=10",
-  },
+  { name: "1xBet", logo: logo1xBet },
+  { name: "LineBet", logo: logoLineBet },
+  { name: "WinWin", logo: logoWinWin },
+  { name: "GreenBet", logo: logoGreenBet },
 ];
 
 function Reveal({ children }: { children: React.ReactNode }) {
@@ -186,7 +178,7 @@ function TermsPage() {
                     loading="lazy"
                     width={96}
                     height={40}
-                    className="relative z-10 h-9 w-24 object-contain"
+                    className="relative z-10 h-9 w-24 object-contain drop-shadow-[0_0_6px_rgba(255,255,255,0.55)]"
                   />
                   <span className="relative z-10">{p.name}</span>
                   {platform === p.name && (
