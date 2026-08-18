@@ -1,11 +1,17 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Flame, Play, Star, TrendingUp } from "lucide-react";
 import { TopBar } from "@/components/TopBar";
 import { Logo } from "@/components/Logo";
 import { LoadingDialog } from "@/components/LoadingDialog";
 import { Brand } from "@/components/Brand";
 import { ChoiceDialog, CodeDialog } from "@/components/ActivationDialogs";
+import {
+  clearAwaitingCode,
+  isAwaitingCode,
+  readPendingGame,
+  savePendingGame,
+} from "@/lib/session";
 import apple from "@/assets/game-apple.jpg";
 import crash from "@/assets/game-crash.jpg";
 import mines from "@/assets/game-mines.jpg";
@@ -39,7 +45,20 @@ function GamesPage() {
   const [choice, setChoice] = useState<string | null>(null);
   const [codeOpen, setCodeOpen] = useState(false);
 
-  const play = (to: string) => setChoice(to);
+  // Coming back from the Telegram bot: open the code input right away
+  // for the game the user had picked before leaving.
+  useEffect(() => {
+    if (!isAwaitingCode()) return;
+    const pending = readPendingGame();
+    if (pending) setChoice(pending);
+    setCodeOpen(true);
+    clearAwaitingCode();
+  }, []);
+
+  const play = (to: string) => {
+    savePendingGame(to);
+    setChoice(to);
+  };
 
   const onGet = () => {
     setChoice(null);
@@ -52,7 +71,7 @@ function GamesPage() {
   };
 
   const onVerified = () => {
-    const to = choice ?? "/game/apple";
+    const to = (choice ?? readPendingGame() ?? "") || "/game/apple";
     setCodeOpen(false);
     setChoice(null);
     setLoading(true);
