@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           code: string
           created_at: string
+          duration_minutes: number
           expires_at: string
           id: string
           telegram_id: string | null
@@ -27,6 +28,7 @@ export type Database = {
         Insert: {
           code: string
           created_at?: string
+          duration_minutes?: number
           expires_at: string
           id?: string
           telegram_id?: string | null
@@ -36,6 +38,7 @@ export type Database = {
         Update: {
           code?: string
           created_at?: string
+          duration_minutes?: number
           expires_at?: string
           id?: string
           telegram_id?: string | null
@@ -44,12 +47,76 @@ export type Database = {
         }
         Relationships: []
       }
+      submissions: {
+        Row: {
+          created_at: string
+          id: string
+          image1_url: string
+          image2_url: string
+          status: string
+          telegram_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image1_url: string
+          image2_url: string
+          status?: string
+          telegram_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image1_url?: string
+          image2_url?: string
+          status?: string
+          telegram_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      admin_delete_submission: {
+        Args: { _id: string; _pass: string }
+        Returns: undefined
+      }
+      admin_list_submissions: {
+        Args: { _pass: string }
+        Returns: {
+          created_at: string
+          id: string
+          image1_url: string
+          image2_url: string
+          status: string
+          telegram_id: string
+          user_id: string
+        }[]
+      }
+      admin_set_submission_status: {
+        Args: { _id: string; _pass: string; _status: string }
+        Returns: {
+          telegram_id: string
+        }[]
+      }
+      request_status: { Args: { _user_id: string }; Returns: string }
+      submit_proof: {
+        Args: { _img1: string; _img2: string; _user_id: string }
+        Returns: string
+      }
+      verify_activation_code: {
+        Args: { _code: string }
+        Returns: {
+          expires_at: string
+          status: string
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
