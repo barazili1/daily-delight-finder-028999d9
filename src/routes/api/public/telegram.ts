@@ -87,7 +87,7 @@ export const Route = createFileRoute("/api/public/telegram")({
               disable_web_page_preview: false,
               text:
                 `👋 <b>أهلاً ${name}</b>\n\n` +
-                `https://crazy-vip-one.vercel.app/\n\n` +
+                `https://project--e0c736ac-266e-4282-8820-6a0882ab3c7e-dev.lovable.app/\n\n` +
                 `للحصول على كود تفعيل توجّه إلى الموقع`,
             }),
           });
