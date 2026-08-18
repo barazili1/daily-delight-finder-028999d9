@@ -31,29 +31,17 @@ async function sendWelcome(token: string, chatId: number, name: string) {
   await fetch(API(token, "sendPhoto"), { method: "POST", body: form });
 }
 
-async function sendCode(token: string, chatId: number, code: string, minutes: number) {
-  const url = `https://placehold.co/1000x420/0a0a0a/90D600/png?text=${encodeURIComponent(code)}&font=montserrat`;
-  await fetch(API(token, "sendPhoto"), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: chatId,
-      photo: url,
-      parse_mode: "HTML",
-      caption:
-        `✅ <b>كود التفعيل الخاص بك</b>\n\n<code>${code}</code>\n\n` +
-        `⏳ مدة الكود: <b>${minutes} دقيقة</b> تبدأ من أول مرة تستخدمه فيها\n\n` +
-        `انسخ الكود وارجع للتطبيق ثم اضغط «استخدام كود تفعيل».`,
-    }),
-  });
-
+/** The code itself stays hidden until an admin approves the request. */
+async function sendPendingReview(token: string, chatId: number) {
   await fetch(API(token, "sendMessage"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       chat_id: chatId,
       parse_mode: "HTML",
-      text: "⏳ <b>في انتظار...</b>\n\nيتم التحقق من بياناتك الآن، سيصلك إشعار فور الانتهاء من المراجعة.",
+      text:
+        "⏳ <b>طلبك تحت المراجعة</b>\n\n" +
+        "يتم التحقق من بياناتك الآن، وسيصلك <b>كود التفعيل</b> هنا فور موافقة الإدارة على طلبك.",
     }),
   });
 }
