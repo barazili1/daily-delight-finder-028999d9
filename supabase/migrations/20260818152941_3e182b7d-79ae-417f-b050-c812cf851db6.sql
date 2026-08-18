@@ -1,0 +1,1 @@
+DELETE FROM public.activation_codes WHERE user_id = 'SELFTEST1';
