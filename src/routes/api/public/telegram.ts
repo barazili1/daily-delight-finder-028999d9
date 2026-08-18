@@ -87,7 +87,7 @@ export const Route = createFileRoute("/api/public/telegram")({
         const token = getBotToken();
 
         const update = (await request.json()) as {
-          message?: { chat: { id: number }; from?: { first_name?: string }; text?: string };
+          message?: { chat: { id: number }; from?: { id?: number; first_name?: string }; text?: string };
         };
         const msg = update.message;
         if (!msg?.text) return new Response("ok");
@@ -97,6 +97,14 @@ export const Route = createFileRoute("/api/public/telegram")({
         const [cmd, arg] = msg.text.trim().split(/\s+/);
 
         if (cmd !== "/start" && cmd !== "/code") return new Response("ok");
+
+        // Mandatory channel subscription: not a member -> ask, and stop here.
+        const fromId = msg.from?.id ?? chatId;
+        if (!(await isSubscribed(token, fromId))) {
+          await askToSubscribe(token, chatId, name);
+          return new Response("ok");
+        }
+
 
         // Only users who came from the website (deep link with their user id) get a code
         if (!arg) {
